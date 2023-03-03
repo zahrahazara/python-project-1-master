@@ -75,6 +75,7 @@ def calc_distance(icao_1, icao_2):
     dist_rounded = round(distance_km)
     #print(distance_km)
     return dist_rounded
+
 #print(calc_distance("vvts", "efhk"))
 
 #saada lentokentät, joille pelaaja voi lentää kilo
@@ -184,6 +185,8 @@ while game_lose == False:
     player_flight = player_flight -1
     print(player_flight)
     update_location(player_id, icao, player_range, player_flight)
+    if player_flight == 0:
+        print('peli loppuu')
 
 
 
