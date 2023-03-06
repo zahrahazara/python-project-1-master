@@ -101,18 +101,21 @@ def update_location(game_id, icao, p_range, p_flight):
 #PELI ALKAA
 #kysy tarvitseko näyttää pelin sääntö
 show_rules = input("Haluatko lukea pelin sääntöjä? Yes/No: ")
+print("\033[34m")
 if show_rules.lower().strip() != "no":
     rule.play_rules()
 
 
 
 
+print("\033[32m")
 player_name = input("Anna nimesi: ")
-player_range = 200
+player_range = 800
 player_flight = 15
 
 
 #pelin lentokentät
+print('\033[30m', end='')
 all_airports = get_airports()
 
 #pelaajan aloitus lentokentä
@@ -120,9 +123,11 @@ starting = all_airports[0]
 
 #pelin lentokentä, jossa timantti
 diamond_airport = all_airports[5]
+print("\033[34m")
 print(f"diamond: {diamond_airport}")
 #pelaajan nytkuinen lentokentä
 current = starting
+print('\033[30m', end='')
 print(f"starting: {starting['name'], starting['ident']}")
 
 #pelin kaikki tehtävät
@@ -140,11 +145,13 @@ player_id = 1
 
 
 #pelin loopi
+print("\033[34m")
 while game_lose == False:
     #näyttää kenttien tiedot, etäiisyys ja pelaajan oma kmmäärä sekä lentokertaa jäljellä pelaajalle
+    print('\033[30m', end='')
     current_name = get_airport_info(current['ident'])['name']
     current_to_diamond = calc_distance(current['ident'], diamond_airport['ident'])
-    print(f"{player_name}, olet nyt {current_name} lentokentällä.")
+    print(f"{player_name}olet nyt {current_name} lentokentällä.")
 
     print(f"Sinulla on nyt {player_range} km ja {player_flight} lentokertaa jäljellä.")
     print(f"Etäisyys timanttiin on noin yli {round(current_to_diamond - 100)} km.")
@@ -152,6 +159,7 @@ while game_lose == False:
 
 
     #kysy jos pelaaja halua lisätä kmmäärä tekemällä tehtävä
+    print("\033[34m")
     question = input("Haluatko voittaa lisä kilometrimäärä tai jatka matka? Y = Haluan, Enter-näppäin: Ohita")
     # if question = Y niin tässä pitää yhdistaa Annan task funktio tai jotain tehtävästä
     # vastaus oiken saa lisää km, muuten miinus
@@ -168,10 +176,11 @@ while game_lose == False:
     input("Lentokentät:")
     in_range_icao_list = []
     for airport in in_range:
-        in_range_icao_list.append(airport['ident'])
-        distance_km = calc_distance(current['ident'], airport['ident'])
-        print(f"{airport['name']}, ICAO-koodi: {airport['ident']}, etäisyys: {distance_km} km")
+            in_range_icao_list.append(airport['ident'])
+            distance_km = calc_distance(current['ident'], airport['ident'])
+            print(f"{airport['name']}, ICAO-koodi: {airport['ident']}, etäisyys: {distance_km} km")
     print(in_range_icao_list)
+
     #kysy
     icao = input("Anna lentokentän ICAO-koodi: ")
     #Oletetaan että pelaaja valitse Rovaniemi airport
@@ -185,8 +194,6 @@ while game_lose == False:
     player_flight = player_flight -1
     print(player_flight)
     update_location(player_id, icao, player_range, player_flight)
-    if player_flight == 0:
-        print('peli loppuu')
 
 
 
