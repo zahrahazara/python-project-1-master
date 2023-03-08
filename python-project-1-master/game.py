@@ -2,7 +2,7 @@ import random
 import mysql.connector
 import rule
 from geopy import distance
-
+from prettytable import PrettyTable
 
 def connect_db():
     return mysql.connector.connect(
@@ -16,52 +16,110 @@ def connect_db():
 
 
 connection = connect_db()
-
 #FUNCTIONS
 #valitse peliin Suomen keskisuuret ja suuret lentokentät (yhteensä 31)
 def get_airports():
-    query = """SELECT municipality, ident, name, latitude_deg, longitude_deg
+    query = """SELECT ident, name, latitude_deg, longitude_deg
 FROM airport
 WHERE iso_country = 'FI' AND (type = 'large_airport'
 OR type = 'medium_airport');"""
+    #print(query)
+    #connection = connect_db()
     cursor = connection.cursor(dictionary=True)
     cursor.execute(query)
     result = cursor.fetchall()
+    #print(result)
+    #cursor.close()
+    #connection.close()
     return result
 
 
-#saada 29 tehtävää satunnaisesti tietokannasta
+#saada tehtävät tietokannasta
 def get_tasks():
     query = "SELECT * FROM task ORDER BY RAND();"
+    #connection = connect_db()
     cursor = connection.cursor(dictionary=True)
     cursor.execute(query)
     result = cursor.fetchall()
+    #cursor.close()
+    #connection.close()
     return result
 
-#luoda uusi peli: insert pelaajan nimi, current airport, player range, player flight --> game taulu
-"""
-def create_game(all_airports, p_range, p_flight, p_airport, p_name):
-    #peli arpoo aloituslentokentä ja lentokentä, joka timantti sijaitsee
-    #a = random.sample(all_airports, k=2)
-    #(starting_airport, diamond_airport)
-    query1 = "INSERT INTO game (player_range, player_flight, location, screen_name)
-VALUES(200, 15, %s, %s);"
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute(query1, (p_airport, p_name))
-    p_id = cursor.lastrowid
-    tasks = get_tasks()
-    query2 = "INSERT INTO"
-#create_game(300, 15, 'EFHA', 'Martti')
-"""
+def get_screen_names():
+    sql = f"select screen_name from game"
+    #connection = connect_db()
+    cursor = connection.cursor()
+    cursor.execute(sql)
+    list = cursor.fetchall()
+    #cursor.close()
+    #connection.close()
+    names = []
+    for n in list:
+        names.append(n[0])
+    return names
+
+def create_new_player(name):
+    query = f"INSERT INTO game (screen_name) VALUES('{name}');"
+    #connection = connect_db()
+    cursor = connection.cursor()
+    cursor.execute(query)
+    #cursor.close()
+    #connection.close()
+    player_id = cursor.lastrowid
+    return player_id
+
+def get_existing_game_id(name):
+    query = f"SELECT id FROM game WHERE screen_name = '{name}';"
+    #connection = connect_db()
+    cursor = connection.cursor()
+    cursor.execute(query)
+    #cursor.close()
+    #connection.close()
+    result = cursor.fetchone()
+    id = result[0]
+    return id
+
+
+#päivitä game taulussa (location käytetään icao-koodilla)
+def update_game(game_id, p_range, p_flight=None, loca=None, goal_loca=None):
+    if p_flight is None and loca is None and goal_loca is None:
+        query = f"UPDATE game SET player_range = {p_range} WHERE id = {game_id};"
+    elif goal_loca is None:
+        query = f"UPDATE game SET location = '{loca}', player_range = {p_range}, player_flight = {p_flight} WHERE id = {game_id};"
+    else:
+        query = f"UPDATE game SET player_range = {p_range}, player_flight = {p_flight}, location = '{loca}', " \
+                f"goal_id = 1, goal_location = '{goal_loca}' WHERE id = {game_id};"
+    #print(query)
+    #connection = connect_db()
+    cursor = connection.cursor()
+    cursor.execute(query)
+    #cursor.close()
+    #connection.close()
+
+#luoda uusi peli: insert current airport, player range, player flight, goal airport --> game taulu
+def create_game(airports, p_range, p_flight, p_id):
+    # peli arpoo aloituslentokentä ja lentokentä, joka timantti sijaitsee
+    start = random.choice(airports)
+    diamond = random.choice(airports)
+    while start == diamond:
+        start = random.choice(airports)
+        diamond = random.choice(airports)
+    start_icao = start['ident']
+    diamond_icao = diamond['ident']
+    update_game(p_id, p_range, p_flight, start_icao, diamond_icao)
+    return (start, diamond)
 
 #get airport info
 def get_airport_info(icao_code):
     query = f"SELECT ident, name, latitude_deg, longitude_deg " \
             f"FROM airport WHERE ident = '{icao_code}'"
     #print(query)
+    #connection = connect_db()
     cursor = connection.cursor(dictionary=True)
     cursor.execute(query)
     result = cursor.fetchone()
+    #cursor.close()
+    #connection.close()
     return result
 
 #laskea etäiisyys kahden lentokentä valillä
@@ -76,9 +134,7 @@ def calc_distance(icao_1, icao_2):
     #print(distance_km)
     return dist_rounded
 
-#print(calc_distance("vvts", "efhk"))
-
-#saada lentokentät, joille pelaaja voi lentää kilo
+#saada lentokentät, joille pelaaja voi lentää
 # metrimäärällään
 def get_airports_in_range(airports, cur_airport, p_range):
     airports_in_range = []
@@ -88,112 +144,168 @@ def get_airports_in_range(airports, cur_airport, p_range):
             airports_in_range.append(airport)
     return airports_in_range
 
-#päivitä location, player_range, player_flight,  game-taulussa
-def update_location(game_id, icao, p_range, p_flight):
-    query = f"UPDATE game SET location = '{icao}', player_range = {p_range}, player_flight = {p_flight} WHERE id = {game_id}"
-    #print(query)
-    cursor = connection.cursor(dictionary=True)
-    cursor.execute(query)
-
-
-
-
 #PELI ALKAA
 #kysy tarvitseko näyttää pelin sääntö
 show_rules = input("Haluatko lukea pelin sääntöjä? Yes/No: ")
-print("\033[34m")
-if show_rules.lower().strip() != "no":
+if show_rules.lower() == "yes":
     rule.play_rules()
+input("Jatkamaan painamalla Enter-näppäintä...")
+print("1. Olet uusi pelaaja.")
+print("2. Olet pelannut aikaisemmin.")
 
+choose = input("Anna toiminnan numero (1 tai 2): ")
+while choose not in ['1', '2']:
+    choose = input("Anna toiminnan numero (1 tai 2): ")
+choose = int(choose)
+player_names = get_screen_names()
+names_upper = []
+for name in player_names:
+    names_upper.append(name.upper())
+#print(names_upper)
+if choose == 1:
+    name = input("Luo Pelinimi: ")
+    while name.upper() in names_upper or name == "":
+        if name.upper() in names_upper:
+            print(f"{name} nimi on jo käytössä. Anna uusi nimi.")
+        elif name == "":
+            print(f"Et syötetty nimeä. Anna uusi nimi.")
+        name = input("Luo pelinimi: ")
+    player_id = create_new_player(name)
+elif choose == 2:
+    print("Tervetuloa etsimään timanttia!")
+    name = input("Anna nimesi: ")
+    while name.upper() not in names_upper:
+        print(f"Nimi: {name} ei löytyy listasta.")
+        name = input("Anna nimesi: ")
+    player_id = get_existing_game_id(name)
 
-
-
-print("\033[32m")
-player_name = input("Anna nimesi: ")
-player_range = 800
-player_flight = 15
-
+player_range = 1000
+flight_limit = 2
+player_flight = flight_limit
 
 #pelin lentokentät
-print('\033[30m', end='')
 all_airports = get_airports()
+#print(all_airports)
+#luo peli pelaajalle, palauta pelaajan aloitus lentokenttä, pelin lentokentä, jossa timantti
+(starting, diamond_airport) = create_game(all_airports, player_range, player_flight, player_id)
 
-#pelaajan aloitus lentokentä
-starting = all_airports[0]
+#print(f"diamond: {diamond_airport}")
 
-#pelin lentokentä, jossa timantti
-diamond_airport = all_airports[5]
-print("\033[34m")
-print(f"diamond: {diamond_airport}")
-#pelaajan nytkuinen lentokentä
 current = starting
-print('\033[30m', end='')
-print(f"starting: {starting['name'], starting['ident']}")
+#print(f"starting: {starting}")
 
 #pelin kaikki tehtävät
 tasks = get_tasks()
-
+#print(tasks)
 
 #Boolean kun timantti on löytynyt
-diamond_found = False
+game_win = False
 game_lose = False
 
-#luoda peli pelaajalle:
-#create_game()
-#kun tämä funktio on suoritettu, saamme player_id
-player_id = 1
-
-
+moved = []
+moved.append(starting['ident'])
 #pelin loopi
-print("\033[34m")
-while game_lose == False:
+while game_win == False:
     #näyttää kenttien tiedot, etäiisyys ja pelaajan oma kmmäärä sekä lentokertaa jäljellä pelaajalle
-    print('\033[30m', end='')
     current_name = get_airport_info(current['ident'])['name']
     current_to_diamond = calc_distance(current['ident'], diamond_airport['ident'])
-    print(f"{player_name}olet nyt {current_name} lentokentällä.")
+    print(f"\033[34m{name}, olet nyt {current_name} lentokentällä.\033[0m")
 
-    print(f"Sinulla on nyt {player_range} km ja {player_flight} lentokertaa jäljellä.")
-    print(f"Etäisyys timanttiin on noin yli {round(current_to_diamond - 100)} km.")
+    print(f"\033[34mSinulla on nyt {player_range} km ja {player_flight} lentokertaa jäljellä.\033[0m")
+
+    if current_to_diamond <= 300:
+        print("\033[32mEtäisyys timanttiin on noin 0 - 300 km.\033[0m")
+    elif 300 < current_to_diamond <= 600:
+        print("\033[32mEtäisyys timanttiin on noin yli 300 - 600 km.\033[0m")
+    elif current_to_diamond > 600:
+        print("\033[32mEtäisyys timanttiin on noin yli 600 km.\033[0m")
     input("Jatkamaan painamalla Enter-näppäintä...")
 
-
-    #kysy jos pelaaja halua lisätä kmmäärä tekemällä tehtävä
-    print("\033[34m")
-    question = input("Haluatko voittaa lisä kilometrimäärä tai jatka matka? Y = Haluan, Enter-näppäin: Ohita")
-    # if question = Y niin tässä pitää yhdistaa Annan task funktio tai jotain tehtävästä
-    # vastaus oiken saa lisää km, muuten miinus
-    # player_range += km jos voitti, -= km jos vastaus oli väärin
-    #päivitä game taulu (+ tai - km)
+    # tehtävä suoritaminen
+    # kysy jos pelaaja halua lisätä kmmäärä tekemällä tehtävä
+    question = input("\033[34mHaluatko voittaa lisä kilometrimäärä tai jatka matka? "
+                     "yes = Haluan, Enter-näppäin: Ohita \033[0m ")
+    if question.lower() == "yes":
+        print(("Tervetuloa tehtäviin!"))
+        task = random.choice(tasks)
+        print(f"Laskea: {task['name']}")
+        ans = input("Anna vaustaus: ")
+        while not ans.isdigit():
+            print("Anna vastaus numeroina.")
+            ans = input("Anna vastaus: ")
+        if task['answer'] == int(ans):
+            print("Vastauksesi on oikein, voitat 200 km!")
+            player_range += 200
+            print(player_range)
+        else:
+            print("Vastauksesi on väärä, vähenee 50 km!")
+            player_range -= 50
+        update_game(player_id, player_range)
+        print(f"\033[34mSinulla on nyt {player_range} km ja {player_flight} lentokertaa jäljellä.\033[0m")
 
     #laskea etäisyys ja näyttää lentokentät, joihin pelaaja on mahdollista lentää
     in_range = get_airports_in_range(all_airports, current, player_range)
     if len(in_range) == 0:
-        print("Sinun kilometrimäärä ei riittää lentämiseksi. Game over!")
-        game_lose == True
+        print("Peli loppui! Sinun kilometrimäärä ei riittää lentämiseksi. ")
+        game_lose = True
         break
-    print(f"Mihin haluat matka? On {len(in_range)} lentokenttää, mihin voit lentää kilometrimäärälläsi.")
-    input("Lentokentät:")
+    print(f"Mihin haluat lentää? On {len(in_range)} lentokenttää, mihin voit lentää kilometrimäärälläsi.")
+    input("Jatkamaan painamalla Enter-näppäintä...")
+    print("Lentokentät:...")
     in_range_icao_list = []
+    im_range_distance_added = []
+    # laskea etäisyys, lisää ICAO koodit eri listalle, lisää etäisyys tietoa im_range_distance_added listalle
     for airport in in_range:
-            in_range_icao_list.append(airport['ident'])
-            distance_km = calc_distance(current['ident'], airport['ident'])
-            print(f"{airport['name']}, ICAO-koodi: {airport['ident']}, etäisyys: {distance_km} km")
-    print(in_range_icao_list)
+        in_range_icao_list.append(airport['ident'])
+        distance_km = calc_distance(current['ident'], airport['ident'])
+        airport.update({'distance': distance_km})
+        im_range_distance_added.append(airport)
+
+    #tulosta taulu etäisyyden mukaan
+    list_sorted = sorted(im_range_distance_added, key=lambda d: d['distance'])
+    table = PrettyTable()
+    table.align['Lentokenttä'] = 'l'
+    Y = "\033[93m"  # yellow
+    B = "\033[1m"  # Bold
+    R = "\033[0m"  # reset
+    table.field_names = [B + "Lentokenttä" + R, B + "ICAO-koodi" + R, B + "Etäisyys" + R]
+
+
+    for a in list_sorted:
+        if a['ident'] not in moved:
+            table.add_row([a['name'], a['ident'], a['distance']])
+        else:
+            table.add_row([Y + a['name'] + R, Y + a['ident'] + R, Y + str(a['distance']) + R])
+    print(table)
 
     #kysy
-    icao = input("Anna lentokentän ICAO-koodi: ")
-    #Oletetaan että pelaaja valitse Rovaniemi airport
+    icao = input("Mihin haluat jatkaa matkaa? Lentokentän ICAO-koodi: ").upper()
     #Pyytä uudelleen ICAO-koodi, jos se ei ole yllä olevassa luettelossa
     while icao not in in_range_icao_list:
-        icao = input("Anna lentokentän ICAO-koodi: ")
-    #laskea ja päivitä tietoja game-taululle
+        icao = input("Väärä ICAO-koodi. Kijoita uudestaan: ").upper()
+    moved.append(icao)
+
+    #laskea etäisyys ja päivitä tietoja game-taululle
     distance_between = calc_distance(current['ident'], icao)
     player_range = player_range - distance_between
     current = get_airport_info(icao)
-    player_flight = player_flight -1
-    print(player_flight)
-    update_location(player_id, icao, player_range, player_flight)
+    player_flight = player_flight - 1
+    #print(player_flight)
+    update_game(player_id, player_range, player_flight, icao)
+
+    if current['ident'] == diamond_airport['ident']:
+        print(B + "Wau! Löysit timantin! Olet hyvä etsijä!" + R)
+        game_win = True
+
+    if player_flight == 0:
+        print(B + f"Peli loppui! Olet lentänyt {flight_limit} kertaa." + R)
+        game_lose = True
+        break
+
+
+print(B + "ONNEA! VOITIT PELIN! " + R if game_win else "")
+print(B + f"Hävisit! \n Timantin sijaitsee {diamond_airport['name']} lentokentällä."
+      f" \n Sinulla on  {player_range} km ja {player_flight} lentokertaa jäljellä." + R if game_lose else "")
 
 
 
@@ -206,6 +318,4 @@ while game_lose == False:
 
 
 
-
-
-connection.close()
+#connection.close()
