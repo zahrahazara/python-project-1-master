@@ -1,11 +1,13 @@
-
-text = "Yhteensä on 31 lentokentää, joka voit lentää vapaasti etsimään timantti.\n\
-    Saat 500Km, millä voit alka matkaa etsimään timantti.\n\
-    Jokaisessa lentokentällä, ilmoitetaan etäisyys timantille sijainnista. \n\
-    Jokaisen lennon jälkeen tulee ehto haluatko voitaa lisää km.\n\
-    Saat 200km kun vastaus oikein jokaisesta laskutehtävistä.\n\
-    Väärä vastaus minustetaan 50km.\n\
-    Jos kilometrimäärä loppuu kesken matkalla, peli loppuu tai lentänyt yli 10 kertaa."
+text = "    - Yhteensä on 31 lentokenttää, joista voit etsimään timanttia.\n\
+    - Saat 1000Km ja 15 lentomäärää, millä voit alka.\n\
+    - Jokaisessa lentokentällä, ilmoitetaan etäisyys timantista. \n\
+    - Jokaisen lennon jälkeen tulee ehto, voitaa lisää km tehtävän tekemisen avulla tai jatka matkaa.\n\
+    - Saat 200km kun vastaus on oikein.\n\
+    - Väärällä  vastaulsella vähenetään 50km.\n\
+    - Peli loppuu kun kilometrimäärät loppuvat kesken tai lentänyt 15 kertaa."
 
 def play_rules():
-    print(text)
+    print(f"\033[35m{text}\033[0m")
+
+
+
