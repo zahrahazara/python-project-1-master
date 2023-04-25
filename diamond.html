@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="Diamond.css" rel="stylesheet">
+    <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons/dist/ionicons/ionicons.esm.js" defer></script>
+    <script nomodule src="https://cdn.jsdelivr.net/npm/ionicons/dist/ionicons/ionicons.js" defer></script>
+    <script src="diamond.js" defer></script>
+    <title>The Diamond in the Europe</title>
+</head>
+<body>
+<div class="container">
+    <header class="page-header">
+        <h1 class="page-titlr">
+            <ion-icon name="diamond-outline"></ion-icon>&nbsp;The diamond&nbsp;
+        </h1>
+        <nav>
+            <ul>
+                <li>
+                    <a href="#" id="game-link">Game</a>
+                <li>
+                    <a href="#" id="about-link">About</a>
+                </li>
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <div id="about" class="hidden">
+            <p>
+                - Yhteensä on 100 lentokenttää, joista voit etsimään timanttia.<br>
+                - Saat 1000Km ja 15 lentomäärää, millä voit alka.<br>
+                - Jokaisessa lentokentällä, ilmoitetaan etäisyys timantista. <br>
+                - Jokaisen lennon jälkeen tulee ehto, voitaa lisää km tehtävän tekemisen avulla tai jatka matkaa.<br>
+                - Saat 200km kun vastaus on oikein.<br>
+                - Väärällä vastaulsella vähenetään 50km.<br>
+                - Peli loppuu kun kilometrimäärät loppuvat kesken tai lentänyt 15 kertaa
+            </p>
+        </div>
+        <div class="map-container">
+            <div id="map">
+                <img src="img/Europe.svg" alt="map of europe">
+            </div>
+        </div>
+        <div class="boxes">
+            <section class="box">
+                <header>
+                    <h2>Game Status</h2>
+                </header>
+                <table border="1">
+                    <tr>
+                        <td colspan="2" Player Name></td>
+                    </tr>
+                    <tr>
+                        <td>Lento Määrä : <span id="lentomäärä">15</span> krt</td>
+                        <td>Kilometri :<span id="kilometrimäärä">10000</span></td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <header>
+                    <h2>Distance to Diamond</h2>
+                </header>
+                <table border="1" id="distance-table">
+                    <tr>
+                        <td>Etäisyys timantista: <span id="#map"></span></td>
+                        <td>Sijainti: <span id="location"></span> </td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="box">
+                <table border="1" id="continue-table">
+                    <tr>
+                        <td>Jatka peliä:</td>
+                         <button id="continue-button">Lennä!</button>
+                        <td>Voita km!</td>
+                         <button id="lasku-button">voita!</button>
+                    </tr>
+                </table>
+            </section>
+        </div>
+
+    </main>
+</div>
+
+</body>
+</html>

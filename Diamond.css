@@ -1,0 +1,127 @@
+/* General styles */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: sans-serif;
+  margin: 0;
+}
+
+.container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Header styles */
+
+.page-header {
+  background-color: #000;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 0;
+}
+
+.page-title {
+  font-size: 2rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.page-title ion-icon {
+  font-size: 2.5rem;
+  margin-right: 10px;
+}
+
+nav ul {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  list-style: none;
+}
+
+nav li {
+  margin-left: 20px;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+/* Main content styles */
+
+main {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+#map {
+  flex: 2 1 60%;
+  height: 600px;
+  margin-right: 20px;
+}
+
+.boxes {
+  flex: 1 1 40%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.box {
+  background-color: #eee;
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.box h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+}
+
+.box table {
+  width: 70%;
+  border-collapse: collapse;
+
+}
+
+.box table td {
+  padding: 5px;
+  text-align: center;
+  vertical-align: middle;
+  border: 1px solid #ccc;
+}
+
+.box table td:first-child {
+  font-weight: bold;
+  text-align: center;
+  vertical-align: middle;
+  width: 50%;
+}
+
+.box table td:last-child {
+  text-align: right;
+  width: 50%;
+}
+
+.box table tr:first-child td {
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+.hidden {
+    display: none;
+}
