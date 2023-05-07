@@ -1,90 +1,133 @@
 <!DOCTYPE html>
+<!--suppress XmlDuplicatedId -->
 <html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="Diamond.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.8.0/dist/leaflet.css"/>
+    <link href="diamond.css" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.8.0/dist/leaflet.js" defer></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/ionicons/dist/ionicons/ionicons.esm.js" defer></script>
     <script nomodule src="https://cdn.jsdelivr.net/npm/ionicons/dist/ionicons/ionicons.js" defer></script>
-    <script src="diamond.js" defer></script>
+    <script src="main.js" defer></script>
     <title>The Diamond in the Europe</title>
 </head>
 <body>
 <div class="container">
     <header class="page-header">
-        <h1 class="page-titlr">
+        <h1 class="page-title">
             <ion-icon name="diamond-outline"></ion-icon>&nbsp;The diamond&nbsp;
         </h1>
         <nav>
             <ul>
                 <li>
-                    <a href="#" id="game-link">Game</a>
+                    <a href="index.html" class="button">Uusi peli</a>&nbsp&nbsp&nbsp
+                </li>
                 <li>
-                    <a href="#" id="about-link">About</a>
+                    <a href="about.html" class="button">Pelistä</a>
                 </li>
             </ul>
         </nav>
     </header>
     <main>
-        <div id="about" class="hidden">
-            <p>
-                - Yhteensä on 100 lentokenttää, joista voit etsimään timanttia.<br>
-                - Saat 1000Km ja 15 lentomäärää, millä voit alka.<br>
-                - Jokaisessa lentokentällä, ilmoitetaan etäisyys timantista. <br>
-                - Jokaisen lennon jälkeen tulee ehto, voitaa lisää km tehtävän tekemisen avulla tai jatka matkaa.<br>
-                - Saat 200km kun vastaus on oikein.<br>
-                - Väärällä vastaulsella vähenetään 50km.<br>
-                - Peli loppuu kun kilometrimäärät loppuvat kesken tai lentänyt 15 kertaa
-            </p>
+        <div id="map">
+            <img src="" alt="map of europe">
         </div>
-        <div class="map-container">
-            <div id="map">
-                <img src="img/Europe.svg" alt="map of europe">
-            </div>
-        </div>
+
         <div class="boxes">
             <section class="box">
                 <header>
-                    <h2>Game Status</h2>
+                    <h2>Pelin tilanne</h2>
                 </header>
-                <table border="1">
+                <table>
                     <tr>
-                        <td colspan="2" Player Name></td>
+                        <td colspan="2">
+                            <h3 id="player-name" class="player-name">Pelaajan nimi</h3>
+                        </td>
                     </tr>
-                    <tr>
-                        <td>Lento Määrä : <span id="lentomäärä">15</span> krt</td>
-                        <td>Kilometri :<span id="kilometrimäärä">10000</span></td>
+                    <tr class="text">
+                        <td>Lennot jäljellä</td>
+                        <td>Kilometrimäärä</td>
+                    </tr>
+                    <tr class="text">
+                        <td id="p-flight"></td>
+                        <td id="p-range"></td>
                     </tr>
                 </table>
             </section>
 
             <section class="box">
                 <header>
-                    <h2>Distance to Diamond</h2>
+                    <h2>Etäisyys timantista</h2>
                 </header>
-                <table border="1" id="distance-table">
+                <table id="distance-table">
                     <tr>
-                        <td>Etäisyys timantista: <span id="#map"></span></td>
-                        <td>Sijainti: <span id="location"></span> </td>
+                        <td>Etäisyys timanttiin on noin <span id="goal-distance">789</span></td>
+                        <!--                        <td>Sijaintisi: <span id="location"></span> </td>-->
                     </tr>
                 </table>
             </section>
 
             <section class="box">
-                <table border="1" id="continue-table">
+                <header>
+                    <h2>Tehtävät</h2>
+                </header>
+                <table id="task-table">
                     <tr>
-                        <td>Jatka peliä:</td>
-                         <button id="continue-button">Lennä!</button>
-                        <td>Voita km!</td>
-                         <button id="lasku-button">voita!</button>
+                        <td>
+                            <button id="task-button" class="button">Voita kilometrejä!</button>
+                        </td>
+                    </tr>
+                    <tr class="invisible">
+                        <td id="task-field">
+                            <label for="task">Tehtävä:</label>
+                            <input type="text" id="task" name="task" placeholder="tehtävä"><br><br>
+                            <label for="answer">Vastaus:</label>
+                            <input type="text" id="answer" name="answer"><br><br>
+                            <input type="submit" id="task-submit" value="Lähetä" class="button">
+                        </td>
+
                     </tr>
                 </table>
             </section>
         </div>
 
     </main>
+    <footer>
+        <p>Ryhmä 5 2023</p>
+    </footer>
+    <div class="content">
+        <div class="goal"></div>
+    </div>
+    <div id="player-modal" class="modal">
+        <form id="player-form">
+            <label for="player-name">Enter your name:</label>
+            <input type="text" id="player-input" placeholder="Player name" required>
+            <label for="player-type">Are you a new player or returning player?</label>
+            <select id="player-type">
+                <option value="new">New player</option>
+                <option value="returning">Returning player</option>
+            </select>
+            <input type="submit" value="Start game">
+        </form>
+    </div>
+    <div class="welcome-message">
+        <p>Welcome to our game!</p>
+        <p class="welcome-back" style="display: none;">Welcome back, <span id="player-name"></span>!</p>
+        <button class="button" id="welcome-button">Start game</button>
+    </div>
+
+    <dialog id="game-alert" class="modal">
+        <span>&#x2715;</span>
+        <h3 id="modal-title">Game Over</h3>
+        <p id="modal-text">Sorry, you lost the game. Try again?</p>
+        <img src="img/diamond.jpg" alt="">
+        <a href="index.html" class="button" id="modal-button">Pelaa uudestaan</a>&nbsp&nbsp&nbsp
+    </dialog>
+
+
 </div>
 
 </body>
